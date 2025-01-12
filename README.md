@@ -5,6 +5,7 @@ I was inspired by the forum browser version written by someone a long time ago a
 ## Controls:
 Up/ down arrows: Scroll through the menus.
 Left/ Right arrows: Scroll through the pages of topics or posts.
+Space: Jump to the desired page.
 Enter: Select a menu item or, if on a post, copy it to the clipboard.
 Escape: Back or exit.
 
