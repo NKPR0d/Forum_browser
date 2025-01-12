@@ -1,0 +1,243 @@
+#include "bgt_compat.nvgt"
+#include "menu.nvgt"
+#include "speech.nvgt"
+topic[] topics;
+post[] posts;
+menu m;
+string[] rooms={"https://forum.audiogames.net/forum/6/general-game-discussion/", "https://forum.audiogames.net/forum/25/new-releases-room/", "https://forum.audiogames.net/forum/28/developers-room/", "https://forum.audiogames.net/forum/21/offtopic-room/", "https://forum.audiogames.net/forum/20/audiogames-news-room/", "https://forum.audiogames.net/forum/27/articles-room/", "https://forum.audiogames.net/forum/18/site-and-forum-feedback/", "https://forum.audiogames.net/forum/26/audiogames-exclusive-games/", "https://forum.audiogames.net/forum/30/trash/"};
+string[] bads={"<p>", "</p>", "a href=\"", "</a>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "<br />", "&#039;", "<li>", "</li>", "<ul>", "</ul>", "&nbsp;"};
+string[]goods={"", "\r\n", "", "", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "'", "", "", "", "", ""};
+int room, page=1, old_page;
+string test, topic_url;
+class topic {
+int id;
+string name;
+string author;
+}
+class post {
+string author;
+string rank;
+string status;
+string date;
+string post;
+}
+
+void main() {
+show_window("Audiogames forum browser");
+select_room();
+}
+void select_room() {
+reset();
+m.reset(true);
+m.intro_text="Please select a forum room for which to view topics from.";
+string[] items = {"General Game Discussion", "New Releases Room", "Developers room", "Off-topic room", "AudioGames - News room", "Articles Room", "Site and forum feedback", "Audiogames Exclusive Games", "Trash", "Exit"};
+m.add_items(items);
+int mres=m.run();
+if(mres==-1 || mres==items.length()-1) exit();
+else{
+room=mres;
+show_topics();
+}
+}
+void show_topics() {
+if(page<=1) {
+test=url_get(rooms[room]);
+}
+else {
+test=url_get(rooms[room]+="/page/="+page);
+}
+string[] lines=string_split(test, "</span> <a href=\"https://forum.audiogames.net/topic/", true);
+lines.remove_at(0);
+for(int x=0; x<lines.length(); x++) {
+topic new;
+string temp=return_until(lines[x], "/", "");
+new.id=string_to_number(temp);
+string temp2=return_until(lines[x], "<", ">");
+new.name=temp2;
+string temp3=return_until(lines[x], "<", "starter\">by <cite>");
+new.author=temp3;
+topics.insert_last(new);
+}
+for(int x=0; x<topics.length(); x++) {
+int temp4=string_to_number(topics[x].name);
+if(temp4!=0) {
+topics.remove_at(x);
+}
+}
+if(topics.length()<=1) {
+speak("There was an error retrieving topics from this room. Please confirm that your internet connection is stable and try again.");
+reset();
+select_room();
+}
+else {
+m.reset(true);
+@m.background_callback = one_callback;
+m.intro_text="Topics list.";
+string[] items;
+for(int x=0; x<topics.length(); x++) items.insert_last(topics[x].name+" posted by "+topics[x].author);
+items.insert_last("Go back");
+m.add_items(items);
+int mres=m.run();
+if(mres==-1 || mres==items.length()-1) {
+reset();
+select_room();
+}
+else {
+old_page=0;
+topic_url="https://forum.audiogames.net/topic/"+topics[mres].id+"/"+string_replace(topics[mres].name, " ", "-", true);
+parse_posts(topic_url);
+}
+}
+}
+void show_posts(bool reset=true) {
+if(reset) m.reset(true);
+@m.background_callback = two_callback;
+m.intro_text="Posts list.";
+string[] items;
+for(int x=0; x<posts.length(); x++) items.insert_last(x+1+". Posted by "+posts[x].author+". Post: "+posts[x].post);
+items.insert_last("Go back");
+m.add_items(items);
+int mres=m.run();
+if(mres==-1 || mres==items.length()-1) {
+page=old_page;
+old_page=0;
+show_topics();
+}
+else {
+clipboard_copy_text(posts[mres].post);
+speak("The post was copied to the clipboard.");
+show_posts(false);
+}
+}
+void one_callback(menu@ m, string data) {
+if(key_pressed(KEY_SPACE)) {
+int p=numbox("Please enter a page to jump to.");
+page=p;
+speak("Page "+page);
+topics.resize(0);
+show_topics();
+}
+if(key_pressed(KEY_RIGHT)) {
+page++;
+speak("Page "+page);
+topics.resize(0);
+show_topics();
+}
+if(key_pressed(KEY_LEFT)&&page>1) {
+page--;
+topics.resize(0);
+show_topics();
+}
+}
+void two_callback(menu@ m, string data) {
+if(key_pressed(KEY_SPACE)) {
+int p=numbox("Please enter a page to jump to.");
+page=p;
+speak("Page "+page);
+parse_posts(topic_url, page);
+}
+if(key_pressed(KEY_RIGHT)) {
+page++;
+speak("Page "+page);
+parse_posts(topic_url, page);
+}
+if(key_pressed(KEY_LEFT)&&page>1) {
+page--;
+speak("Page "+page);
+parse_posts(topic_url, page);
+}
+}
+void reset() {
+topics.resize(0);
+posts.resize(0);
+old_page=0;
+page=1;
+room=0;
+}
+void parse_posts(string url, int page=1){
+string topic_page;
+if(page>1) topic_page=url_get(url+="/page/"+page);
+else topic_page=url_get(url);
+posts.resize(0);
+string[] lines2=string_split(topic_page, "class=\"username\"><a title=\"Go to", true);
+for(int x=0; x<lines2.length(); x++) {
+post new;
+string temp=return_until(lines2[x], "'", "");
+new.author=temp;
+string temp2=return_until(lines2[x], "<", "class=\"usertitle\"><span>");
+new.rank=temp2;
+string temp3=return_until(lines2[x], "	", "<p>");
+new.post=temp3;
+for(uint i=0; i<bads.length(); i++) new.post=string_replace(new.post, bads[i], goods[i], true);
+if(string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)>=0) {
+string encdata=return_until(new.post, "\"", "cfemail=\"");
+string email=DecodeCloudflareEmail(encdata);
+new.post=string_replace(new.post, "/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\"", email, true);
+new.post=string_replace(new.post, "\">[email&#160;protected]", "", true);
+new.post=string_replace(new.post, encdata, "", true);
+}
+posts.insert_last(new);
+}
+posts.remove_at(0);
+show_posts();
+}
+string DecodeCloudflareEmail(string encodedEmail){
+if (encodedEmail.length() < 2) return "";
+int key = parse_int(encodedEmail.substr(0, 2), 16);
+string decodedEmail;
+for (int i = 2; i < encodedEmail.length(); i += 2){
+int byte = parse_int(encodedEmail.substr(i, 2), 16) ^ key;
+decodedEmail += ascii_to_character(byte);
+}
+return decodedEmail;
+}
+string return_until(string text, string char, string start) {
+int starting=0;
+string ret;
+if(start!="") {
+starting=string_contains(text, start, 1);
+starting+=start.length();
+}
+if(starting<0) {
+return "";
+}
+for(int x=starting; x<text.length(); x++) {
+if(text[x]!=char) {
+ret+=text[x];
+}
+if(text[x]==char) {
+break;
+}
+}
+return ret;
+}
+int numbox(string intro)
+{
+speak(intro);
+string input;
+while(true)
+{
+wait(2);
+string c=get_characters();
+if (c.is_digits())
+{
+speak(c);
+input+=c;
+}
+if (key_pressed(KEY_BACK) and input.length()>0)
+{
+string l=input[input.length()-1];
+input.erase(input.length()-1,1);
+speak(l);
+}
+if (key_pressed(KEY_ESCAPE))
+{
+break;
+}
+if (key_pressed(KEY_RETURN))
+{
+return parse_int(input);
+}
+}
+return 0;
+}
