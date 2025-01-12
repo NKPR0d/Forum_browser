@@ -15,6 +15,7 @@ string name;
 string author;
 }
 class post {
+int num;
 string author;
 string rank;
 string status;
@@ -94,7 +95,7 @@ if(reset) m.reset(true);
 @m.background_callback = two_callback;
 m.intro_text="Posts list.";
 string[] items;
-for(int x=0; x<posts.length(); x++) items.insert_last(x+1+". Posted by "+posts[x].author+". Post: "+posts[x].post);
+for(int x=0; x<posts.length(); x++) items.insert_last(posts[x].num+". Posted by "+posts[x].author+". Post: "+posts[x].post+"\r\n"+posts[x].date);
 items.insert_last("Go back");
 m.add_items(items);
 int mres=m.run();
@@ -160,15 +161,19 @@ string topic_page;
 if(page>1) topic_page=url_get(url+="/page/"+page);
 else topic_page=url_get(url);
 posts.resize(0);
-string[] lines2=string_split(topic_page, "class=\"username\"><a title=\"Go to", true);
+string[] lines2=string_split(topic_page, ">#", true);
 for(int x=0; x<lines2.length(); x++) {
 post new;
-string temp=return_until(lines2[x], "'", "");
-new.author=temp;
-string temp2=return_until(lines2[x], "<", "class=\"usertitle\"><span>");
-new.rank=temp2;
-string temp3=return_until(lines2[x], "	", "<p>");
-new.post=temp3;
+string temp=return_until(lines2[x], "<", "");
+new.num=parse_int(temp);
+string temp2=return_until(lines2[x], "'", "<a title=\"Go to ");
+new.author=temp2;
+string temp3=return_until(lines2[x], "<", "class=\"usertitle\"><span>");
+new.rank=temp3;
+string temp4=return_until(lines2[x], "<", "class=\"post-link\">");
+new.date=temp4;
+string temp5=return_until(lines2[x], "	", "<p>");
+new.post=temp5;
 for(uint i=0; i<bads.length(); i++) new.post=string_replace(new.post, bads[i], goods[i], true);
 if(string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)>=0) {
 string encdata=return_until(new.post, "\"", "cfemail=\"");

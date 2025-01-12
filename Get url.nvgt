@@ -1,0 +1,8 @@
+void main(){
+string url="https://forum.audiogames.net/topic/55462/audiogames-forum-browser/";
+string data=url_get(url);
+file f;
+f.open("data.txt", "w");
+f.write(data);
+f.close();
+}
