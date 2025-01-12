@@ -44,7 +44,7 @@ if(page<=1) {
 test=url_get(rooms[room]);
 }
 else {
-test=url_get(rooms[room]+="/page/="+page);
+test=url_get(rooms[room]+"/page/"+page);
 }
 string[] lines=string_split(test, "</span> <a href=\"https://forum.audiogames.net/topic/", true);
 lines.remove_at(0);
@@ -125,6 +125,7 @@ show_topics();
 }
 if(key_pressed(KEY_LEFT)&&page>1) {
 page--;
+speak("Page "+page);
 topics.resize(0);
 show_topics();
 }
@@ -172,9 +173,7 @@ for(uint i=0; i<bads.length(); i++) new.post=string_replace(new.post, bads[i], g
 if(string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)>=0) {
 string encdata=return_until(new.post, "\"", "cfemail=\"");
 string email=DecodeCloudflareEmail(encdata);
-new.post=string_replace(new.post, "/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\"", email, true);
-new.post=string_replace(new.post, "\">[email&#160;protected]", "", true);
-new.post=string_replace(new.post, encdata, "", true);
+new.post=string_replace(new.post, "/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", email, true);
 }
 posts.insert_last(new);
 }
