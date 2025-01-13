@@ -10,17 +10,16 @@ string[]goods={"", "\r\n", "", "", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n
 uint room, page=1, old_page, last_page;
 string room_url, topic_url;
 class topic {
-int id;
+uint id;
 string name;
 string int_name;
 string author;
 string status;
 }
 class post {
-int num;
+uint num;
 string author;
-string rank;
-string status;
+string user_rank, user_status, user_from, user_reg, user_posts, user_karma;
 string date;
 string post;
 }
@@ -47,31 +46,25 @@ show_topics();
 void show_topics() {
 topics.resize(0);
 room_url=url_get(rooms[room]+"/page/"+page);
-string temp=rooms[room];
 string[] lines=string_split(room_url, "<span class=\"item-num\">", true);
-last_page=parse_int(return_until(lines[0], "/", "<link rel=\"last\" href=\""+temp+"page/"));
+last_page=parse_int(return_until(lines[0], "/", "<link rel=\"last\" href=\""+rooms[room]+"page/"));
 lines.remove_at(0);
-for(int x=0; x<lines.length(); x++) {
+for(uint x=0; x<lines.length(); x++) {
 topic new;
-string temp=return_until(lines[x], "/", "https://forum.audiogames.net/topic/");
-new.id=parse_int(temp);
-string temp2=return_until(lines[x], "/", temp+"/");
-new.int_name=temp2;
-string temp3=return_until(lines[x], "<", temp2+"/\">");
-new.name=temp3;
+new.id=parse_int(return_until(lines[x], "/", "https://forum.audiogames.net/topic/"));
+new.int_name=return_until(lines[x], "/", new.id+"/");
+new.name=return_until(lines[x], "<", new.int_name+"/\">");
 new.name=string_replace(new.name, "&#039;", "'", true);
-string temp4=return_until(lines[x], "<", "starter\">by <cite>");
-new.author=temp4;
+new.author=return_until(lines[x], "<", "starter\">by <cite>");
 if(string_contains(lines[x], "<span class=\"item-status\">", 1)>=0) {
-string temp5=return_until(lines[x], ":", "<span class=\"item-status\">");
-for(uint i=0; i<bads2.length(); i++) temp5=string_replace(temp5, bads2[i], "", true);
-new.status=temp5+". ";
+new.status=return_until(lines[x], ":", "<span class=\"item-status\">")+". ";
+for(uint i=0; i<bads2.length(); i++) new.status=string_replace(new.status, bads2[i], "", true);
 }
 topics.insert_last(new);
 }
 for(uint x=0; x<topics.length(); x++) {
-int temp6=parse_int(topics[x].name);
-if(temp6!=0) {
+int temp=parse_int(topics[x].name);
+if(temp!=0) {
 topics.remove_at(x);
 }
 }
@@ -164,6 +157,12 @@ page--;
 speak("Page "+page);
 parse_posts(topic_url, page);
 }
+if(key_pressed(KEY_F1)) speak(posts[m.get_focused_item()].user_rank);
+if(key_pressed(KEY_F2)) speak(posts[m.get_focused_item()].user_status);
+if(key_pressed(KEY_F3)) speak(posts[m.get_focused_item()].user_from);
+if(key_pressed(KEY_F4)) speak(posts[m.get_focused_item()].user_reg);
+if(key_pressed(KEY_F5)) speak(posts[m.get_focused_item()].user_posts);
+if(key_pressed(KEY_F6)) speak(posts[m.get_focused_item()].user_karma);
 }
 void reset() {
 topics.resize(0);
@@ -181,17 +180,18 @@ else last_page=page;
 lines.remove_at(0);
 for(uint x=0; x<lines.length(); x++) {
 post new;
-string temp=return_until(lines[x], "<", "");
-temp=string_replace(temp, ",", "", true);
-new.num=parse_int(temp);
-string temp2=return_until(lines[x], "'", "<a title=\"Go to ");
-new.author=temp2;
-string temp3=return_until(lines[x], "<", "class=\"usertitle\"><span>");
-new.rank=temp3;
-string temp4=return_until(lines[x], "<", "class=\"post-link\">");
-new.date=temp4;
-string temp5=return_until(lines[x], "	", "<p>");
-new.post=temp5;
+new.num=parse_int(string_replace(return_until(lines[x], "<", ""), ",", "", true));
+new.author=return_until(lines[x], "'", "<a title=\"Go to ");
+new.user_rank=return_until(lines[x], "<", "class=\"usertitle\"><span>");
+new.user_status=return_until(lines[x], "<", "class=\"userstatus\"><span>");
+if(string_contains(lines[x], "From: <strong>", 1)>=0) new.user_from="From: "+return_until(lines[x], "<", "From: <strong>");
+else new.user_from="Information is not available";
+new.user_reg="Registered: "+return_until(lines[x], "<", "Registered: <strong>");
+new.user_posts="Posts: "+parse_int(string_replace(return_until(lines[x], "<", "Posts: <strong>"), ",", "", true));
+if(string_contains(lines[x], "User Karma: <strong>", 1)>=0) new.user_karma="User karma: "+parse_int(return_until(lines[x], "<", "User Karma: <strong>"));
+else new.user_karma="Information is not available";
+new.date=return_until(lines[x], "<", "class=\"post-link\">");
+new.post=return_until(lines[x], "	", "<p>");
 for(uint i=0; i<bads.length(); i++) new.post=string_replace(new.post, bads[i], goods[i], true);
 if(string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)>=0) {
 string encdata=return_until(new.post, "\"", "cfemail=\"");
