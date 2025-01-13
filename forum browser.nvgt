@@ -5,6 +5,7 @@ menu m;
 touch_gesture_manager touch;
 string[] rooms={"https://forum.audiogames.net/forum/6/general-game-discussion/", "https://forum.audiogames.net/forum/25/new-releases-room/", "https://forum.audiogames.net/forum/28/developers-room/", "https://forum.audiogames.net/forum/21/offtopic-room/", "https://forum.audiogames.net/forum/20/audiogames-news-room/", "https://forum.audiogames.net/forum/27/articles-room/", "https://forum.audiogames.net/forum/18/site-and-forum-feedback/", "https://forum.audiogames.net/forum/26/audiogames-exclusive-games/", "https://forum.audiogames.net/forum/30/trash/"};
 string[] bads={"<p>", "</p>", "a href=\"", "</a>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "<br />", "&#039;", "<li>", "</li>", "<ul>", "</ul>", "&nbsp;"};
+string[] bads2={"<em class=\"", "sticky\">", "closed\">", "moved\">", "</em>"};
 string[]goods={"", "\r\n", "", "", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "'", "", "", "", "", ""};
 int room, page=1, old_page, last_page;
 string room_url, topic_url;
@@ -13,6 +14,7 @@ int id;
 string name;
 string int_name;
 string author;
+string status;
 }
 class post {
 int num;
@@ -47,25 +49,30 @@ void show_topics() {
 topics.resize(0);
 room_url=url_get(rooms[room]+"/page/"+page);
 string temp=rooms[room];
-string[] lines=string_split(room_url, "</span> <a href=\"https://forum.audiogames.net/topic/", true);
+string[] lines=string_split(room_url, "<span class=\"item-num\">", true);
 last_page=parse_int(return_until(lines[0], "/", "<link rel=\"last\" href=\""+temp+"page/"));
 lines.remove_at(0);
 for(int x=0; x<lines.length(); x++) {
 topic new;
-string temp=return_until(lines[x], "/", "");
+string temp=return_until(lines[x], "/", "https://forum.audiogames.net/topic/");
 new.id=string_to_number(temp);
 string temp2=return_until(lines[x], "/", temp+"/");
 new.int_name=temp2;
-string temp3=return_until(lines[x], "<", ">");
+string temp3=return_until(lines[x], "<", temp2+"/\">");
 new.name=temp3;
 new.name=string_replace(new.name, "&#039;", "'", true);
 string temp4=return_until(lines[x], "<", "starter\">by <cite>");
 new.author=temp4;
+if(string_contains(lines[x], "<span class=\"item-status\">", 1)>=0) {
+string temp5=return_until(lines[x], ":", "<span class=\"item-status\">");
+for(uint i=0; i<bads2.length(); i++) temp5=string_replace(temp5, bads2[i], "", true);
+new.status=temp5+". ";
+}
 topics.insert_last(new);
 }
 for(int x=0; x<topics.length(); x++) {
-int temp5=string_to_number(topics[x].name);
-if(temp5!=0) {
+int temp6=string_to_number(topics[x].name);
+if(temp6!=0) {
 topics.remove_at(x);
 }
 }
@@ -79,7 +86,7 @@ m.reset(true);
 @m.background_callback = topic_callback;
 m.intro_text="Topics list. Page "+page+" of "+last_page;
 string[] items;
-for(int x=0; x<topics.length(); x++) items.insert_last(topics[x].name+" posted by "+topics[x].author);
+for(int x=0; x<topics.length(); x++) items.insert_last(topics[x].status+topics[x].name+" posted by "+topics[x].author);
 items.insert_last("Go back");
 m.add_items(items);
 int mres=m.run();
@@ -179,6 +186,7 @@ lines.remove_at(0);
 for(int x=0; x<lines.length(); x++) {
 post new;
 string temp=return_until(lines[x], "<", "");
+temp=string_replace(temp, ",", "", true);
 new.num=parse_int(temp);
 string temp2=return_until(lines[x], "'", "<a title=\"Go to ");
 new.author=temp2;
