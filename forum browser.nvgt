@@ -7,7 +7,7 @@ string[] rooms={"https://forum.audiogames.net/forum/6/general-game-discussion/",
 string[] bads={"<p>", "</p>", "a href=\"", "</a>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "<br />", "&#039;", "<li>", "</li>", "<ul>", "</ul>", "&nbsp;"};
 string[] bads2={"<em class=\"", "sticky\">", "closed\">", "moved\">", "</em>"};
 string[]goods={"", "\r\n", "", "", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "'", "", "", "", "", ""};
-int room, page=1, old_page, last_page;
+uint room, page=1, old_page, last_page;
 string room_url, topic_url;
 class topic {
 int id;
@@ -129,20 +129,17 @@ else if(p==0) speak("Canceled.");
 else{
 page=p;
 speak("Page "+page);
-topics.resize(0);
 show_topics();
 }
 }
 if(key_pressed(KEY_RIGHT) && page<last_page) {
 page++;
 speak("Page "+page);
-topics.resize(0);
 show_topics();
 }
 if(key_pressed(KEY_LEFT)&&page>1) {
 page--;
 speak("Page "+page);
-topics.resize(0);
 show_topics();
 }
 }
