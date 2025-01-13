@@ -34,7 +34,6 @@ select_room();
 void select_room() {
 reset();
 m.reset(true);
-m.set_repeat_boundary_items(true);
 m.intro_text="Please select a forum room for which to view topics from.";
 string[] items = {"General Game Discussion", "New Releases Room", "Developers room", "Off-topic room", "AudioGames - News room", "Articles Room", "Site and forum feedback", "Audiogames Exclusive Games", "Trash", "Exit"};
 m.add_items(items);
@@ -55,7 +54,7 @@ lines.remove_at(0);
 for(int x=0; x<lines.length(); x++) {
 topic new;
 string temp=return_until(lines[x], "/", "https://forum.audiogames.net/topic/");
-new.id=string_to_number(temp);
+new.id=parse_int(temp);
 string temp2=return_until(lines[x], "/", temp+"/");
 new.int_name=temp2;
 string temp3=return_until(lines[x], "<", temp2+"/\">");
@@ -70,8 +69,8 @@ new.status=temp5+". ";
 }
 topics.insert_last(new);
 }
-for(int x=0; x<topics.length(); x++) {
-int temp6=string_to_number(topics[x].name);
+for(uint x=0; x<topics.length(); x++) {
+int temp6=parse_int(topics[x].name);
 if(temp6!=0) {
 topics.remove_at(x);
 }
@@ -86,7 +85,7 @@ m.reset(true);
 @m.background_callback = topic_callback;
 m.intro_text="Topics list. Page "+page+" of "+last_page;
 string[] items;
-for(int x=0; x<topics.length(); x++) items.insert_last(topics[x].status+topics[x].name+" posted by "+topics[x].author);
+for(uint x=0; x<topics.length(); x++) items.insert_last(topics[x].status+topics[x].name+" posted by "+topics[x].author);
 items.insert_last("Go back");
 m.add_items(items);
 int mres=m.run();
@@ -107,7 +106,7 @@ if(reset) m.reset(true);
 @m.background_callback = post_callback;
 m.intro_text="Posts list. Page "+page+" of "+last_page;
 string[] items;
-for(int x=0; x<posts.length(); x++) items.insert_last(posts[x].num+". Posted by "+posts[x].author+". Post: "+posts[x].post+"\r\n"+posts[x].date);
+for(uint x=0; x<posts.length(); x++) items.insert_last(posts[x].num+". Posted by "+posts[x].author+". Post: "+posts[x].post+"\r\n"+posts[x].date);
 items.insert_last("Go back");
 m.add_items(items);
 int mres=m.run();
@@ -124,7 +123,7 @@ show_posts(false);
 }
 void topic_callback(menu@ m, string data) {
 if(key_pressed(KEY_SPACE)) {
-int p=numbox("Please enter a page to jump to.");
+uint p=numbox("Please enter a page to jump to.");
 if(p>last_page) speak("This page does not exist.");
 else if(p==0) speak("Canceled.");
 else{
@@ -149,7 +148,7 @@ show_topics();
 }
 void post_callback(menu@ m, string data) {
 if(key_pressed(KEY_SPACE)) {
-int p=numbox("Please enter a page to jump to.");
+uint p=numbox("Please enter a page to jump to.");
 if(p>last_page) speak("This page does not exist.");
 else if(p==0) speak("Canceled.");
 else{
@@ -176,14 +175,14 @@ old_page=0;
 page=1;
 room=0;
 }
-void parse_posts(string url, int page=1){
+void parse_posts(string url, uint page=1){
 string topic_page=url_get(url+"page/"+page);
 posts.resize(0);
 string[] lines=string_split(topic_page, "\">#", true);
 if(string_contains(lines[0], "link rel=\"last\"", 1)>=0) last_page=parse_int(return_until(lines[0], "/", "<link rel=\"last\" href=\""+url+"page/"));
 else last_page=page;
 lines.remove_at(0);
-for(int x=0; x<lines.length(); x++) {
+for(uint x=0; x<lines.length(); x++) {
 post new;
 string temp=return_until(lines[x], "<", "");
 temp=string_replace(temp, ",", "", true);
@@ -210,7 +209,7 @@ string decode_cloudflare_email(string encoded_email){
 if (encoded_email.length() < 2) return "";
 int key = parse_int(encoded_email.substr(0, 2), 16);
 string decoded_email;
-for (int i = 2; i < encoded_email.length(); i += 2){
+for (uint i = 2; i < encoded_email.length(); i += 2){
 int byte = parse_int(encoded_email.substr(i, 2), 16) ^ key;
 decoded_email += ascii_to_character(byte);
 }
@@ -226,7 +225,7 @@ starting+=start.length();
 if(starting<0) {
 return "";
 }
-for(int x=starting; x<text.length(); x++) {
+for(uint x=starting; x<text.length(); x++) {
 if(text[x]!=char) {
 ret+=text[x];
 }
@@ -272,7 +271,6 @@ return parse_int(input);
 return 0;
 }
 
-//Android stuff
 string get_characters_android()
 {
 string char;
