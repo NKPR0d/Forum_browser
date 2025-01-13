@@ -1,12 +1,8 @@
-#include "bgt_compat.nvgt"
-#include "menu.nvgt"
-#include "speech.nvgt"
-#include "touch.nvgt"
+#include "include/*.nvgt"
 topic[] topics;
 post[] posts;
 menu m;
 touch_gesture_manager touch;
-touch_keyboard_interface ti(touch, {{"swipe_left1f", KEY_UP}, {"swipe_right1f", KEY_DOWN}, {"swipe_up1f", KEY_LEFT}, {"swipe_down1f", KEY_RIGHT}, {"double_tap1f", KEY_RETURN}, {"swipe_left2f", KEY_ESCAPE}, {"double_tap2f", KEY_SPACE}});
 string[] rooms={"https://forum.audiogames.net/forum/6/general-game-discussion/", "https://forum.audiogames.net/forum/25/new-releases-room/", "https://forum.audiogames.net/forum/28/developers-room/", "https://forum.audiogames.net/forum/21/offtopic-room/", "https://forum.audiogames.net/forum/20/audiogames-news-room/", "https://forum.audiogames.net/forum/27/articles-room/", "https://forum.audiogames.net/forum/18/site-and-forum-feedback/", "https://forum.audiogames.net/forum/26/audiogames-exclusive-games/", "https://forum.audiogames.net/forum/30/trash/"};
 string[] bads={"<p>", "</p>", "a href=\"", "</a>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "<br />", "&#039;", "<li>", "</li>", "<ul>", "</ul>", "&nbsp;"};
 string[]goods={"", "\r\n", "", "", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "'", "", "", "", "", ""};
@@ -28,7 +24,8 @@ string post;
 }
 
 void main() {
-if(touch.is_available()) touch.add_touch_interface(ti);
+touch_keyboard_interface ti(touch, {{"swipe_left1f", KEY_UP}, {"swipe_right1f", KEY_DOWN}, {"swipe_up1f", KEY_LEFT}, {"swipe_down1f", KEY_RIGHT}, {"double_tap1f", KEY_RETURN}, {"swipe_left2f", KEY_ESCAPE}, {"double_tap2f", KEY_SPACE}});
+touch.add_touch_interface(ti);
 show_window("Audiogames forum browser");
 select_room();
 }
