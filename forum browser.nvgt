@@ -32,6 +32,7 @@ select_room();
 void select_room() {
 reset();
 m.reset(true);
+m.set_repeat_boundary_items(true);
 m.intro_text="Please select a forum room for which to view topics from.";
 string[] items = {"General Game Discussion", "New Releases Room", "Developers room", "Off-topic room", "AudioGames - News room", "Articles Room", "Site and forum feedback", "Audiogames Exclusive Games", "Trash", "Exit"};
 m.add_items(items);
@@ -173,7 +174,7 @@ string topic_page=url_get(url+"page/"+page);
 posts.resize(0);
 string[] lines=string_split(topic_page, ">#", true);
 if(string_contains(lines[0], "link rel=\"last\"", 1)>=0) last_page=parse_int(return_until(lines[0], "/", "<link rel=\"last\" href=\""+url+"page/"));
-else last_page=1;
+else last_page=page;
 lines.remove_at(0);
 for(int x=0; x<lines.length(); x++) {
 post new;

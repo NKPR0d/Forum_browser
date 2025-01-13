@@ -115,10 +115,7 @@ class menu {
 	}
 	// A blocking style of running the menu which acts very much like dynamic_menu. This blocks until the user selects an option or exits the menu, then returns the selected_item property.
 	int run() {
-		while (monitor()){
-wait(2);
-if(touch.is_available()) touch.monitor();
-}
+		while (monitor()) wait(5);
 		return last_selected_index;
 	}
 	// Various getters and setters.
