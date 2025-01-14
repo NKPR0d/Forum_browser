@@ -103,9 +103,11 @@ if(reset) m.reset(true);
 @m.background_callback = post_callback;
 m.intro_text="Posts list. Page "+page+" of "+last_page;
 string[] items;
+if(reset){
 for(uint x=0; x<posts.length(); x++) items.insert_last(posts[x].num+". Posted by "+posts[x].author+". Post: "+posts[x].post+"\r\n"+posts[x].date);
 items.insert_last("Go back");
 m.add_items(items);
+}
 int mres=m.run();
 if(mres==-1 || mres==items.length()-1) {
 page=old_page;
@@ -129,8 +131,8 @@ items.insert_last("Go back");
 lm.add_items(items);
 int lmres=lm.run();
 if(lmres==-1 || lmres==items.length()-1) {
-show_posts(false);
 speak("Canceled.");
+show_posts(false);
 }
 else{
 speak("Opening the link...");
@@ -182,7 +184,7 @@ page--;
 speak("Page "+page);
 parse_posts(topic_url, page);
 }
-if(keyboard_modifiers & KEYMOD_ALT > 0 && key_pressed(KEY_RETURN)) show_links(m.get_focused_item());
+if(keyboard_modifiers & KEYMOD_ALT > 0 && key_pressed(KEY_RETURN) && m.get_focused_item() != m.get_item_count()-1 && m.get_focused_item()!=-1) show_links(m.get_focused_item());
 if(key_pressed(KEY_F1)) speak(posts[m.get_focused_item()].user_rank);
 if(key_pressed(KEY_F2)) speak(posts[m.get_focused_item()].user_status);
 if(key_pressed(KEY_F3)) speak(posts[m.get_focused_item()].user_from);
@@ -218,7 +220,7 @@ if(string_contains(lines[x], "User Karma: <strong>", 1)>=0) new.user_karma="User
 else new.user_karma="Information is not available";
 new.date=return_until(lines[x], "<", "class=\"post-link\">");
 new.post=return_until(lines[x], "	", "<p>");
-if(string_contains(new.post, "<a href=", 1)>=0) {
+if(string_contains(new.post, "<a href=", 1)>=0 && string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)<0) {
 string[] temp_links;
 string[]data=string_split(new.post, "<a href=\"", true);
 data.remove_at(0);
