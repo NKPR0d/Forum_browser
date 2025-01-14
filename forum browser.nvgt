@@ -221,10 +221,8 @@ else new.user_karma="Information is not available";
 new.date=return_until(lines[x], "<", "class=\"post-link\">");
 new.post=return_until(lines[x], "	", "<p>");
 if(string_contains(new.post, "<a href=", 1)>=0 && string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)<0) {
-string[] temp_links;
-string[]data=string_split(new.post, "<a href=\"", true);
-data.remove_at(0);
-for (uint i = 0; i < data.length(); i ++) temp_links.insert_last(data[i]);
+string[]temp_links=string_split(new.post, "<a href=\"", true);
+temp_links.remove_at(0);
 for (uint i = 0; i < temp_links.length(); i ++) {
 link l;
 l.name=return_until(temp_links[i], "<", "\">");
@@ -234,8 +232,7 @@ new.links.insert_last(l);
 }
 if(string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)>=0) {
 string encdata=return_until(new.post, "\"", "cfemail=\"");
-string email=decode_cloudflare_email(encdata);
-new.post=string_replace(new.post, "/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", email, true);
+new.post=string_replace(new.post, "/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", decode_cloudflare_email(encdata), true);
 }
 for(uint i=0; i<bads.length(); i++) new.post=string_replace(new.post, bads[i], goods[i], true);
 posts.insert_last(new);
