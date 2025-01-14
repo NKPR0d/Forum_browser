@@ -1,10 +1,10 @@
 #include "include/*.nvgt"
 topic[] topics;
 post[] posts;
-menu m;
+menu m, lm;
 touch_gesture_manager touch;
 string[] rooms={"https://forum.audiogames.net/forum/6/general-game-discussion/", "https://forum.audiogames.net/forum/25/new-releases-room/", "https://forum.audiogames.net/forum/28/developers-room/", "https://forum.audiogames.net/forum/21/offtopic-room/", "https://forum.audiogames.net/forum/20/audiogames-news-room/", "https://forum.audiogames.net/forum/27/articles-room/", "https://forum.audiogames.net/forum/18/site-and-forum-feedback/", "https://forum.audiogames.net/forum/26/audiogames-exclusive-games/", "https://forum.audiogames.net/forum/30/trash/"};
-string[] bads={"<p>", "</p>", "a href=\"", "</a>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "<br />", "&#039;", "<li>", "</li>", "<ul>", "</ul>", "&nbsp;"};
+string[] bads={"<p>", "</p>", "<a href=\"", "</a>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "<br />", "&#039;", "<li>", "</li>", "<ul>", "</ul>", "&nbsp;"};
 string[] bads2={"<em class=\"", "sticky\">", "closed\">", "moved\">", "</em>"};
 string[]goods={"", "\r\n", "", "", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "'", "", "", "", "", ""};
 uint room, page=1, old_page, last_page;
@@ -22,6 +22,10 @@ string author;
 string user_rank, user_status, user_from, user_reg, user_posts, user_karma;
 string date;
 string post;
+link@[]links;
+}
+class link{
+string name, address;
 }
 
 void main() {
@@ -114,6 +118,27 @@ speak("The post was copied to the clipboard.");
 show_posts(false);
 }
 }
+void show_links(uint p){
+if(posts[p].links.length()==0) speak("No links were found.");
+else{
+lm.reset(true);
+lm.intro_text="Links menu. There are total of "+posts[p].links.length()+" links.";
+string[] items;
+for(uint i=0; i<posts[p].links.length(); i++) items.insert_last(posts[p].links[i].name+". Link: "+posts[p].links[i].address);
+items.insert_last("Go back");
+lm.add_items(items);
+int lmres=lm.run();
+if(lmres==-1 || lmres==items.length()-1) {
+show_posts(false);
+speak("Canceled.");
+}
+else{
+speak("Opening the link...");
+urlopen(posts[p].links[lmres].address);
+show_posts(false);
+}
+}
+}
 void topic_callback(menu@ m, string data) {
 if(key_pressed(KEY_SPACE)) {
 uint p=numbox("Please enter a page to jump to.");
@@ -157,6 +182,7 @@ page--;
 speak("Page "+page);
 parse_posts(topic_url, page);
 }
+if(keyboard_modifiers & KEYMOD_ALT > 0 && key_pressed(KEY_RETURN)) show_links(m.get_focused_item());
 if(key_pressed(KEY_F1)) speak(posts[m.get_focused_item()].user_rank);
 if(key_pressed(KEY_F2)) speak(posts[m.get_focused_item()].user_status);
 if(key_pressed(KEY_F3)) speak(posts[m.get_focused_item()].user_from);
@@ -192,12 +218,24 @@ if(string_contains(lines[x], "User Karma: <strong>", 1)>=0) new.user_karma="User
 else new.user_karma="Information is not available";
 new.date=return_until(lines[x], "<", "class=\"post-link\">");
 new.post=return_until(lines[x], "	", "<p>");
-for(uint i=0; i<bads.length(); i++) new.post=string_replace(new.post, bads[i], goods[i], true);
+if(string_contains(new.post, "<a href=", 1)>=0) {
+string[] temp_links;
+string[]data=string_split(new.post, "<a href=\"", true);
+data.remove_at(0);
+for (uint i = 0; i < data.length(); i ++) temp_links.insert_last(data[i]);
+for (uint i = 0; i < temp_links.length(); i ++) {
+link l;
+l.name=return_until(temp_links[i], "<", "\">");
+l.address=return_until(temp_links[i], "\"", "");
+new.links.insert_last(l);
+}
+}
 if(string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)>=0) {
 string encdata=return_until(new.post, "\"", "cfemail=\"");
 string email=decode_cloudflare_email(encdata);
 new.post=string_replace(new.post, "/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", email, true);
 }
+for(uint i=0; i<bads.length(); i++) new.post=string_replace(new.post, bads[i], goods[i], true);
 posts.insert_last(new);
 }
 show_posts();
