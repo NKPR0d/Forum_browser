@@ -104,7 +104,7 @@ if(reset) m.reset(true);
 m.intro_text="Posts list. Page "+page+" of "+last_page;
 string[] items;
 if(reset){
-for(uint x=0; x<posts.length(); x++) items.insert_last(posts[x].num+". Posted by "+posts[x].author+". Post: "+posts[x].post+"\r\n"+posts[x].date);
+for(uint x=0; x<posts.length(); x++) items.insert_last(posts[x].num+". Posted by "+posts[x].author+": "+posts[x].post+"\r\n"+posts[x].date);
 items.insert_last("Go back");
 m.add_items(items);
 }
@@ -115,8 +115,7 @@ old_page=0;
 show_topics();
 }
 else {
-clipboard_copy_text(posts[mres].post);
-speak("The post was copied to the clipboard.");
+info_box("Post","",posts[mres].post);
 show_posts(false);
 }
 }
@@ -126,7 +125,7 @@ else{
 lm.reset(true);
 lm.intro_text="Links menu. There are total of "+posts[p].links.length()+" links.";
 string[] items;
-for(uint i=0; i<posts[p].links.length(); i++) items.insert_last(posts[p].links[i].name+". Link: "+posts[p].links[i].address);
+for(uint i=0; i<posts[p].links.length(); i++) items.insert_last(posts[p].links[i].name+": "+posts[p].links[i].address);
 items.insert_last("Go back");
 lm.add_items(items);
 int lmres=lm.run();
