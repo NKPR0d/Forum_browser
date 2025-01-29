@@ -80,7 +80,7 @@ int mres=m.run();
 if(mres==-1 || mres==items.length()-1) {
 page=old_page;
 old_page=0;
-show_topics();
+get_topics();
 }
 else {
 info_box("Post","",posts[mres].post);
@@ -116,18 +116,18 @@ else if(p==0) speak("Canceled.");
 else{
 page=p;
 speak("Page "+page);
-show_topics();
+get_topics();
 }
 }
 if(key_pressed(KEY_RIGHT) && page<last_page) {
 page++;
 speak("Page "+page);
-show_topics();
+get_topics();
 }
 if(key_pressed(KEY_LEFT)&&page>1) {
 page--;
 speak("Page "+page);
-show_topics();
+get_topics();
 }
 }
 void post_callback(menu@ m, string data) {
