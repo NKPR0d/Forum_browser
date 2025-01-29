@@ -3,7 +3,7 @@ topic[] topics;
 post[] posts;
 menu m, lm;
 touch_gesture_manager touch;
-string[] rooms={"https://forum.audiogames.net/forum/6/general-game-discussion/", "https://forum.audiogames.net/forum/25/new-releases-room/", "https://forum.audiogames.net/forum/28/developers-room/", "https://forum.audiogames.net/forum/21/offtopic-room/", "https://forum.audiogames.net/forum/20/audiogames-news-room/", "https://forum.audiogames.net/forum/27/articles-room/", "https://forum.audiogames.net/forum/18/site-and-forum-feedback/", "https://forum.audiogames.net/forum/26/audiogames-exclusive-games/", "https://forum.audiogames.net/forum/30/trash/"};
+string[] rooms={"https://forum.audiogames.net/search/recent/", "https://forum.audiogames.net/forum/6/general-game-discussion/", "https://forum.audiogames.net/forum/25/new-releases-room/", "https://forum.audiogames.net/forum/28/developers-room/", "https://forum.audiogames.net/forum/21/offtopic-room/", "https://forum.audiogames.net/forum/20/audiogames-news-room/", "https://forum.audiogames.net/forum/27/articles-room/", "https://forum.audiogames.net/forum/18/site-and-forum-feedback/", "https://forum.audiogames.net/forum/26/audiogames-exclusive-games/", "https://forum.audiogames.net/forum/30/trash/"};
 string[] bads={"<p>", "</p>", "<a href=\"", "</a>", "<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>", "</h1>", "</h2>", "</h3>", "</h4>", "</h5>", "</h6>", "<br />", "&#039;", "<li>", "</li>", "<ul>", "</ul>", "&nbsp;", "&quot;"};
 string[] bads2={"<em class=\"", "sticky\">", "closed\">", "moved\">", "</em>"};
 string[]goods={"", "\r\n", "", "", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "\r\n", "'", "", "", "", "", "", "\""};
@@ -37,52 +37,23 @@ select_room();
 void select_room() {
 reset();
 m.reset(true);
+@m.background_callback = null;
 m.intro_text="Please select a forum room for which to view topics from.";
-string[] items = {"General Game Discussion", "New Releases Room", "Developers room", "Off-topic room", "AudioGames - News room", "Articles Room", "Site and forum feedback", "Audiogames Exclusive Games", "Trash", "Exit"};
+string[] items = {"Recently active topics", "General Game Discussion", "New Releases Room", "Developers room", "Off-topic room", "AudioGames - News room", "Articles Room", "Site and forum feedback", "Audiogames Exclusive Games", "Trash", "Exit"};
 m.add_items(items);
 int mres=m.run();
 if(mres==-1 || mres==items.length()-1) exit();
 else{
 room=mres;
-show_topics();
+get_topics();
 }
 }
 void show_topics() {
-topics.resize(0);
-room_url=url_get(rooms[room]+"/page/"+page);
-string[] lines=string_split(room_url, "<span class=\"item-num\">", true);
-last_page=parse_int(return_until(lines[0], "/", "<link rel=\"last\" href=\""+rooms[room]+"page/"));
-lines.remove_at(0);
-for(uint x=0; x<lines.length(); x++) {
-topic new;
-new.id=parse_int(return_until(lines[x], "/", "https://forum.audiogames.net/topic/"));
-new.int_name=return_until(lines[x], "/", new.id+"/");
-new.name=return_until(lines[x], "<", new.int_name+"/\">");
-new.name=string_replace(new.name, "&#039;", "'", true);
-new.author=return_until(lines[x], "<", "starter\">by <cite>");
-if(string_contains(lines[x], "<span class=\"item-status\">", 1)>=0) {
-new.status=return_until(lines[x], ":", "<span class=\"item-status\">")+". ";
-for(uint i=0; i<bads2.length(); i++) new.status=string_replace(new.status, bads2[i], "", true);
-}
-topics.insert_last(new);
-}
-for(uint x=0; x<topics.length(); x++) {
-int temp=parse_int(topics[x].name);
-if(temp!=0) {
-topics.remove_at(x);
-}
-}
-if(topics.length()<=1) {
-speak("There was an error retrieving topics from this room. Please confirm that your internet connection is stable and try again.");
-reset();
-select_room();
-}
-else {
 m.reset(true);
 @m.background_callback = topic_callback;
 m.intro_text="Topics list. Page "+page+" of "+last_page;
 string[] items;
-for(uint x=0; x<topics.length(); x++) items.insert_last(topics[x].status+topics[x].name+" posted by "+topics[x].author);
+for(uint i=0; i<topics.length(); i++) items.insert_last(topics[i].status+topics[i].name+" posted by "+topics[i].author);
 items.insert_last("Go back");
 m.add_items(items);
 int mres=m.run();
@@ -94,8 +65,7 @@ else {
 old_page=page;
 page=1;
 topic_url="https://forum.audiogames.net/topic/"+topics[mres].id+"/"+topics[mres].int_name+"/";
-parse_posts(topic_url);
-}
+get_posts(topic_url);
 }
 }
 void show_posts(bool reset=true) {
@@ -103,7 +73,7 @@ if(reset) m.reset(true);
 @m.background_callback = post_callback;
 m.intro_text="Posts list. Page "+page+" of "+last_page;
 string[] items;
-for(uint x=0; x<posts.length(); x++) items.insert_last(posts[x].num+". Posted by "+posts[x].author+": "+posts[x].post+"\r\n"+posts[x].date);
+for(uint i=0; i<posts.length(); i++) items.insert_last(posts[i].num+". Posted by "+posts[i].author+": "+posts[i].post+"\r\n"+posts[i].date);
 items.insert_last("Go back");
 if(reset) m.add_items(items);
 int mres=m.run();
@@ -168,18 +138,18 @@ else if(p==0) speak("Canceled.");
 else{
 page=p;
 speak("Page "+page);
-parse_posts(topic_url, page);
+get_posts(topic_url, page);
 }
 }
 if(key_pressed(KEY_RIGHT) && page<last_page) {
 page++;
 speak("Page "+page);
-parse_posts(topic_url, page);
+get_posts(topic_url, page);
 }
 if(key_pressed(KEY_LEFT)&&page>1) {
 page--;
 speak("Page "+page);
-parse_posts(topic_url, page);
+get_posts(topic_url, page);
 }
 if(keyboard_modifiers & KEYMOD_ALT > 0 && key_pressed(KEY_RETURN) && m.get_focused_item() != m.get_item_count()-1 && m.get_focused_item()!=-1) show_links(m.get_focused_item());
 if(key_pressed(KEY_F1)) speak(posts[m.get_focused_item()].user_rank);
@@ -196,42 +166,77 @@ old_page=0;
 page=1;
 room=0;
 }
-void parse_posts(string url, uint page=1){
+void get_topics(){
+topics.resize(0);
+room_url=url_get(rooms[room]+"page/"+page);
+string[] lines=room_url.split("<span class=\"item-num\">");
+if(room==0) last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+rooms[room]+"86400/page/", "/"));
+else last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+rooms[room]+"page/", "/"));
+lines.remove_at(0);
+for(uint i=0; i<lines.length(); i++) {
+topic new;
+new.id=parse_int(return_until(lines[i], "https://forum.audiogames.net/topic/", "/"));
+new.int_name=return_until(lines[i], new.id+"/", "/");
+new.name=return_until(lines[i], new.int_name+"/\">", "<");
+new.name=new.name.replace("&#039;", "'", true);
+new.author=return_until(lines[i], "starter\">by <cite>", "<");
+if(string_contains(lines[i], "<span class=\"item-status\">", 1)>=0) {
+new.status=return_until(lines[i], "<span class=\"item-status\">", ":")+". ";
+for(uint i=0; i<bads2.length(); i++) new.status=new.status.replace(bads2[i], "", true);
+}
+topics.insert_last(new);
+}
+for(uint i=0; i<topics.length(); i++) {
+int temp=parse_int(topics[i].name);
+if(temp!=0) {
+topics.remove_at(i);
+}
+}
+if(topics.length()==0) {
+speak("There was an error retrieving topics from this room. Please confirm that your internet connection is stable and try again.");
+reset();
+select_room();
+}
+else show_topics();
+}
+void get_posts(string url, uint page=1){
 string topic_page=url_get(url+"page/"+page);
 posts.resize(0);
-string[] lines=string_split(topic_page, "\">#", true);
-if(string_contains(lines[0], "link rel=\"last\"", 1)>=0) last_page=parse_int(return_until(lines[0], "/", "<link rel=\"last\" href=\""+url+"page/"));
+string[] lines=topic_page.split("\">#");
+if(string_contains(lines[0], "link rel=\"last\"", 1)>=0) last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+url+"page/", "/"));
 else last_page=page;
 lines.remove_at(0);
-for(uint x=0; x<lines.length(); x++) {
+for(uint i=0; i<lines.length(); i++) {
 post new;
-new.num=parse_int(string_replace(return_until(lines[x], "<", ""), ",", "", true));
-new.author=return_until(lines[x], "'", "<a title=\"Go to ");
-new.user_rank=return_until(lines[x], "<", "class=\"usertitle\"><span>");
-new.user_status=return_until(lines[x], "<", "class=\"userstatus\"><span>");
-if(string_contains(lines[x], "From: <strong>", 1)>=0) new.user_from="From: "+return_until(lines[x], "<", "From: <strong>");
+new.num=parse_int(return_until(lines[i], "", "<").replace(",", "", true));
+new.author=return_until(lines[i], "<a title=\"Go to ", "'");
+new.user_rank=return_until(lines[i], "class=\"usertitle\"><span>", "<");
+new.user_status=return_until(lines[i], "class=\"userstatus\"><span>", "<");
+if(string_contains(lines[i], "From: <strong>", 1)>=0) new.user_from="From: "+return_until(lines[i], "From: <strong>", "<");
 else new.user_from="Information is not available";
-new.user_reg="Registered: "+return_until(lines[x], "<", "Registered: <strong>");
-new.user_posts="Posts: "+parse_int(string_replace(return_until(lines[x], "<", "Posts: <strong>"), ",", "", true));
-if(string_contains(lines[x], "User Karma: <strong>", 1)>=0) new.user_karma="User karma: "+parse_int(return_until(lines[x], "<", "User Karma: <strong>"));
+new.user_reg="Registered: "+return_until(lines[i], "Registered: <strong>", "<");
+new.user_posts="Posts: "+parse_int(return_until(lines[i], "Posts: <strong>", "<").replace(",", "", true));
+if(string_contains(lines[i], "User Karma: <strong>", 1)>=0) new.user_karma="User karma: "+parse_int(return_until(lines[i], "User Karma: <strong>", "<"));
 else new.user_karma="Information is not available";
-new.date=return_until(lines[x], "<", "class=\"post-link\">");
-new.post=return_until(lines[x], "	", "<p>");
+new.date=return_until(lines[i], "class=\"post-link\">", "<");
+new.post=return_until(lines[i], "<p>", "	");
 if(string_contains(new.post, "<a href=", 1)>=0 && string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)<0) {
-string[]temp_links=string_split(new.post, "<a href=\"", true);
+string[]temp_links=new.post.split("<a href=\"");
 temp_links.remove_at(0);
 for (uint i = 0; i < temp_links.length(); i ++) {
 link l;
-l.name=return_until(temp_links[i], "<", "\">");
-l.address=return_until(temp_links[i], "\"", "");
+l.name=return_until(temp_links[i], "\">", "<");
+l.address=return_until(temp_links[i], "", "\"");
 new.links.insert_last(l);
+if(l.name==l.address) new.post=new.post.replace(return_until(temp_links[i], "", "<"), l.address, false);
+else new.post=new.post.replace(return_until(temp_links[i], "", "<"), l.name+" ("+l.address+")", false);
 }
 }
 if(string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)>=0) {
-string encdata=return_until(new.post, "\"", "cfemail=\"");
-new.post=string_replace(new.post, "/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", decode_cloudflare_email(encdata), true);
+string encdata=return_until(new.post, "cfemail=\"", "\"");
+new.post=new.post.replace("/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", decode_cloudflare_email(encdata), true);
 }
-for(uint i=0; i<bads.length(); i++) new.post=string_replace(new.post, bads[i], goods[i], true);
+for(uint i=0; i<bads.length(); i++) new.post=new.post.replace(bads[i], goods[i], true);
 posts.insert_last(new);
 }
 show_posts();
@@ -246,7 +251,7 @@ decoded_email += ascii_to_character(byte);
 }
 return decoded_email;
 }
-string return_until(string text, string char, string start) {
+string return_until(string text, string start, string end) {
 int starting=0;
 string ret;
 if(start!="") {
@@ -256,11 +261,11 @@ starting+=start.length();
 if(starting<0) {
 return "";
 }
-for(uint x=starting; x<text.length(); x++) {
-if(text[x]!=char) {
-ret+=text[x];
+for(uint i=starting; i<text.length(); i++) {
+if(text[i]!=end) {
+ret+=text[i];
 }
-if(text[x]==char) {
+if(text[i]==end) {
 break;
 }
 }
@@ -335,7 +340,7 @@ else if (key_pressed(KEY_9))
 char="(";
 else if (key_pressed(KEY_0))
 char=")";
-else if (key_pressed(KEY_DASH))
+else if (key_pressed(KEY_MINUS))
 char="_";
 else if (key_pressed(KEY_EQUALS))
 char="+";
@@ -344,7 +349,7 @@ char=char.upper();
 }
 if (key_up(KEY_LSHIFT) and key_up(KEY_RSHIFT))
 {
-if (key_pressed(KEY_DASH))
+if (key_pressed(KEY_MINUS))
 char="-";
 if (key_pressed(KEY_EQUALS))
 char="=";
@@ -362,4 +367,16 @@ char="/";
 if (key_pressed(KEY_APOSTROPHE))
 char="'";
 return char;
+}
+shared int string_contains(const string& in str, const string& in search, int occurance = 1) {
+	uint c = 0;
+	int pos = -1;
+	while (c < occurance) {
+		pos = str.find_first(search, pos + 1);
+		if (pos > -1)
+			c++;
+		else
+			break;
+	}
+	return c == occurance ? pos : -1;
 }
