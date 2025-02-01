@@ -93,7 +93,10 @@ else{
 lm.reset(true);
 lm.intro_text="Links menu. There are total of "+posts[p].links.length()+" links.";
 string[] items;
-for(uint i=0; i<posts[p].links.length(); i++) items.insert_last(posts[p].links[i].name+": "+posts[p].links[i].address);
+for(uint i=0; i<posts[p].links.length(); i++){
+if(posts[p].links[i].name==posts[p].links[i].address) items.insert_last(posts[p].links[i].address);
+else items.insert_last(posts[p].links[i].name+": "+posts[p].links[i].address);
+}
 items.insert_last("Go back");
 lm.add_items(items);
 int lmres=lm.run();
@@ -170,7 +173,7 @@ void get_topics(){
 topics.resize(0);
 room_url=url_get(rooms[room]+"page/"+page);
 string[] lines=room_url.split("<span class=\"item-num\">");
-if(room==0) last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+rooms[room]+"86400/page/", "/"));
+if(room==0) last_page=1;
 else last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+rooms[room]+"page/", "/"));
 lines.remove_at(0);
 for(uint i=0; i<lines.length(); i++) {
@@ -220,9 +223,10 @@ if(string_contains(lines[i], "User Karma: <strong>", 1)>=0) new.user_karma="User
 else new.user_karma="Information is not available";
 new.date=return_until(lines[i], "class=\"post-link\">", "<");
 new.post=return_until(lines[i], "<p>", "	");
-if(string_contains(new.post, "<a href=", 1)>=0 && string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)<0) {
+if(string_contains(new.post, "<a href=", 1)>=0) {
 string[]temp_links=new.post.split("<a href=\"");
 temp_links.remove_at(0);
+for (uint i = 0; i < temp_links.length(); i ++) if(string_contains(temp_links[i], "cdn-cgi/l/email-protection", 1)>=0) temp_links.remove_at(i);
 for (uint i = 0; i < temp_links.length(); i ++) {
 link l;
 l.name=return_until(temp_links[i], "\">", "<");
@@ -232,9 +236,13 @@ if(l.name==l.address) new.post=new.post.replace(return_until(temp_links[i], "", 
 else new.post=new.post.replace(return_until(temp_links[i], "", "<"), l.name+" ("+l.address+")", false);
 }
 }
-if(string_contains(new.post, "cdn-cgi/l/email-protection\" class", 1)>=0) {
-string encdata=return_until(new.post, "cfemail=\"", "\"");
-new.post=new.post.replace("/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", decode_cloudflare_email(encdata), true);
+if(string_contains(new.post, "/cdn-cgi/l/email-protection", 1)>=0) {
+string[]emails=new.post.split("/cdn-cgi/l/email-protection");
+emails.remove_at(0);
+for (uint i = 0; i < emails.length(); i ++) {
+string encdata=return_until(emails[i], "cfemail=\"", "\"");
+new.post=new.post.replace("/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", decode_cloudflare_email(encdata), false);
+}
 }
 for(uint i=0; i<bads.length(); i++) new.post=new.post.replace(bads[i], goods[i], true);
 posts.insert_last(new);
