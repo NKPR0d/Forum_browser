@@ -3,7 +3,7 @@ reset();
 m.reset(true);
 @m.background_callback = null;
 m.intro_text="Please select a forum room for which to view topics from.";
-string[] items = {"Recently active topics", "General Game Discussion", "New Releases Room", "Developers room", "Off-topic room", "AudioGames - News room", "Articles Room", "Site and forum feedback", "Audiogames Exclusive Games", "Trash", "Exit"};
+string[] items = {"Recently active topics", "General Game Discussion", "New Releases Room", "Play testing", "Developers room", "Off-topic room", "AudioGames - News room", "Articles Room", "Site and forum feedback", "Audiogames Exclusive Games", "Trash", "Exit"};
 m.add_items(items);
 int mres=m.run();
 if(mres==-1 || mres==items.length()-1) exit();
