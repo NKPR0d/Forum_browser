@@ -4,14 +4,15 @@ room_url=fl.get_html(rooms[room]+"page/"+page);
 if(room_url!=""){
 string[] lines=room_url.split("<span class=\"item-num\">");
 if(room==0) last_page=1;
-else last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+rooms[room]+"page/", "/"));
+else if(string_contains(lines[0], "link rel=\"last\"", 1)>=0) last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+rooms[room]+"page/", "/"));
+else last_page=page;
 lines.remove_at(0);
 for(uint i=0; i<lines.length(); i++) {
 topic new;
 new.id=parse_int(return_until(lines[i], "https://forum.audiogames.net/topic/", "/"));
 new.int_name=return_until(lines[i], new.id+"/", "/");
 new.name=return_until(lines[i], new.int_name+"/\">", "<");
-new.name=new.name.replace("&#039;", "'", true);
+new.name=html_entities_decode(new.name);
 new.author=return_until(lines[i], "starter\">by <cite>", "<");
 if(string_contains(lines[i], "<span class=\"item-status\">", 1)>=0) {
 new.status=return_until(lines[i], "<span class=\"item-status\">", ":")+". ";

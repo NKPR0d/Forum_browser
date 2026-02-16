@@ -7,7 +7,7 @@ private json_array sessions;
 flaresolverr(const string&in s){
 this.session=s;
 }
-void check_session(){
+private void check_session(){
 req.set("cmd", "sessions.list");
 this.post();
 if (response == "") {
@@ -42,13 +42,13 @@ return;
 }
 return;
 }
-bool session_exists(const string&in session){
+private bool session_exists(const string&in session){
 for (uint i = 0; i < sessions.length(); i ++){
 if(sessions[i]==session) return true;
 }
 return false;
 }
-void prepare_request(const string&in target_url, int timeout) {
+private void prepare_request(const string&in target_url, int timeout) {
 req.clear();
 req.set("cmd", "request.get");
 req.set("url", target_url);
