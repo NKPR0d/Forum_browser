@@ -15,7 +15,8 @@ string[] bads={
 "<i>", "</i>", "<em>", "</em>", 
 "<u>", "</u>", "<span>", "</span>",
 "<blockquote>", "</blockquote>",
-"<hr />"
+"<hr />",
+"<a href=\"", "</a>"
 };
 string[] goods={
 "", "\r\n", 
@@ -28,7 +29,8 @@ string[] goods={
 "", "", "", "", 
 "", "", "", "",
 "\r\n[Quote]:\r\n", "\r\n[End Quote]\r\n",
-"\r\n__________________\r\n"
+"\r\n__________________\r\n",
+"", ""
 };
 string[] bads2={"<em class=\"", "sticky\">", "closed\">", "moved\">", "</em>"};
 uint room, page=1, old_page, last_page;
