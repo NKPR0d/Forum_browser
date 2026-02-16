@@ -1,0 +1,18 @@
+class topic {
+uint id;
+string name;
+string int_name;
+string author;
+string status;
+}
+class post {
+uint num;
+string author;
+string user_rank, user_status, user_from, user_reg, user_posts, user_karma;
+string date;
+string post;
+link@[]links;
+}
+class link{
+string name, address;
+}

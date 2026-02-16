@@ -1,0 +1,84 @@
+void get_topics(){
+topics.resize(0);
+room_url=fl.get_html(rooms[room]+"page/"+page);
+if(room_url!=""){
+string[] lines=room_url.split("<span class=\"item-num\">");
+if(room==0) last_page=1;
+else last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+rooms[room]+"page/", "/"));
+lines.remove_at(0);
+for(uint i=0; i<lines.length(); i++) {
+topic new;
+new.id=parse_int(return_until(lines[i], "https://forum.audiogames.net/topic/", "/"));
+new.int_name=return_until(lines[i], new.id+"/", "/");
+new.name=return_until(lines[i], new.int_name+"/\">", "<");
+new.name=new.name.replace("&#039;", "'", true);
+new.author=return_until(lines[i], "starter\">by <cite>", "<");
+if(string_contains(lines[i], "<span class=\"item-status\">", 1)>=0) {
+new.status=return_until(lines[i], "<span class=\"item-status\">", ":")+". ";
+for(uint i=0; i<bads2.length(); i++) new.status=new.status.replace(bads2[i], "", true);
+}
+topics.insert_last(new);
+}
+for(uint i=0; i<topics.length(); i++) {
+int temp=parse_int(topics[i].name);
+if(temp!=0) {
+topics.remove_at(i);
+}
+}
+if(topics.length()==0) {
+error("There was an error retrieving topics from this room. Please confirm that your internet connection is stable and try again.");
+reset();
+select_room();
+}
+else show_topics();
+}
+}
+void get_posts(const string&in url, uint page=1){
+string topic_page=fl.get_html(url+"page/"+page);
+if(topic_page!=""){
+posts.resize(0);
+string[] lines=topic_page.split("\">#");
+if(string_contains(lines[0], "link rel=\"last\"", 1)>=0) last_page=parse_int(return_until(lines[0], "<link rel=\"last\" href=\""+url+"page/", "/"));
+else last_page=page;
+lines.remove_at(0);
+for(uint i=0; i<lines.length(); i++) {
+post new;
+new.num=parse_int(return_until(lines[i], "", "<").replace(",", "", true));
+new.author=return_until(lines[i], "<a title=\"Go to ", "'");
+new.user_rank=return_until(lines[i], "class=\"usertitle\"><span>", "<");
+new.user_status=return_until(lines[i], "class=\"userstatus\"><span>", "<");
+if(string_contains(lines[i], "From: <strong>", 1)>=0) new.user_from="From: "+return_until(lines[i], "From: <strong>", "<");
+else new.user_from="Information is not available";
+new.user_reg="Registered: "+return_until(lines[i], "Registered: <strong>", "<");
+new.user_posts="Posts: "+parse_int(return_until(lines[i], "Posts: <strong>", "<").replace(",", "", true));
+if(string_contains(lines[i], "User Karma: <strong>", 1)>=0) new.user_karma="User karma: "+parse_int(return_until(lines[i], "User Karma: <strong>", "<"));
+else new.user_karma="Information is not available";
+new.date=return_until(lines[i], "class=\"post-link\">", "<");
+new.post=return_until(lines[i], "<p>", "	");
+if(string_contains(new.post, "<a href=", 1)>=0) {
+string[]temp_links=new.post.split("<a href=\"");
+temp_links.remove_at(0);
+for (uint i = 0; i < temp_links.length(); i ++) if(string_contains(temp_links[i], "cdn-cgi/l/email-protection", 1)>=0) temp_links.remove_at(i);
+for (uint i = 0; i < temp_links.length(); i ++) {
+link l;
+l.name=return_until(temp_links[i], "\">", "<");
+l.address=return_until(temp_links[i], "", "\"");
+new.links.insert_last(l);
+if(l.name==l.address) new.post=new.post.replace(return_until(temp_links[i], "", "<"), l.address, false);
+else new.post=new.post.replace(return_until(temp_links[i], "", "<"), l.name+" ("+l.address+")", false);
+}
+}
+if(string_contains(new.post, "/cdn-cgi/l/email-protection", 1)>=0) {
+string[]emails=new.post.split("/cdn-cgi/l/email-protection");
+emails.remove_at(0);
+for (uint i = 0; i < emails.length(); i ++) {
+string encdata=return_until(emails[i], "cfemail=\"", "\"");
+new.post=new.post.replace("/cdn-cgi/l/email-protection\" class=\"__cf_email__\" data-cfemail=\""+encdata+"\">[email&#160;protected]", decode_email(encdata), false);
+}
+}
+for(uint i=0; i<bads.length(); i++) new.post=new.post.replace(bads[i], goods[i], true);
+posts.insert_last(new);
+}
+show_posts();
+}
+}

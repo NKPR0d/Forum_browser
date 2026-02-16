@@ -1,8 +1,0 @@
-void main(){
-string url="";
-string data=url_get(url);
-file f;
-f.open("data.txt", "w");
-f.write(data);
-f.close();
-}

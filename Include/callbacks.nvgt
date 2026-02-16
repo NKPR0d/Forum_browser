@@ -1,0 +1,51 @@
+void topic_callback(menu@ m, string data) {
+if(key_pressed(KEY_SPACE)) {
+uint p=numbox("Please enter a page to jump to.");
+if(p>last_page) speak("This page does not exist.");
+else if(p==0) speak("Canceled.");
+else{
+page=p;
+speak("Page "+page);
+get_topics();
+}
+}
+if(key_pressed(KEY_RIGHT) && page<last_page) {
+page++;
+speak("Page "+page);
+get_topics();
+}
+if(key_pressed(KEY_LEFT)&&page>1) {
+page--;
+speak("Page "+page);
+get_topics();
+}
+}
+void post_callback(menu@ m, string data) {
+if(key_pressed(KEY_SPACE)) {
+uint p=numbox("Please enter a page to jump to.");
+if(p>last_page) speak("This page does not exist.");
+else if(p==0) speak("Canceled.");
+else{
+page=p;
+speak("Page "+page);
+get_posts(topic_url, page);
+}
+}
+if(key_pressed(KEY_RIGHT) && page<last_page) {
+page++;
+speak("Page "+page);
+get_posts(topic_url, page);
+}
+if(key_pressed(KEY_LEFT)&&page>1) {
+page--;
+speak("Page "+page);
+get_posts(topic_url, page);
+}
+if(keyboard_modifiers & KEYMOD_ALT > 0 && key_pressed(KEY_RETURN) && m.get_focused_item() != m.get_item_count()-1 && m.get_focused_item()!=-1) show_links(m.get_focused_item());
+if(key_pressed(KEY_F1)) speak(posts[m.get_focused_item()].user_rank);
+if(key_pressed(KEY_F2)) speak(posts[m.get_focused_item()].user_status);
+if(key_pressed(KEY_F3)) speak(posts[m.get_focused_item()].user_from);
+if(key_pressed(KEY_F4)) speak(posts[m.get_focused_item()].user_reg);
+if(key_pressed(KEY_F5)) speak(posts[m.get_focused_item()].user_posts);
+if(key_pressed(KEY_F6)) speak(posts[m.get_focused_item()].user_karma);
+}

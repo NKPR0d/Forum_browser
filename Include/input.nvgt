@@ -1,0 +1,108 @@
+int numbox(string intro, bool mobile=false)
+{
+speak(intro);
+string input;
+string c;
+while(true)
+{
+wait(2);
+if(touch.is_available()){
+touch.monitor();
+c=get_characters_android();
+}
+else c=get_characters();
+if (c.is_digits())
+{
+speak(c);
+input+=c;
+}
+if (key_pressed(KEY_BACK) and input.length()>0)
+{
+string l=input[input.length()-1];
+input.erase(input.length()-1,1);
+speak(l);
+}
+if (key_pressed(KEY_ESCAPE))
+{
+break;
+}
+if (key_pressed(KEY_RETURN))
+{
+return parse_int(input);
+}
+}
+return 0;
+}
+string get_characters_android()
+{
+string char;
+string keys="abcdefghijklmnopqrstuvwxyz";
+if (key_up(KEY_LSHIFT) and key_up(KEY_RSHIFT))
+keys+="1234567890";
+for (uint i=0; i<keys.length(); i++)
+{
+if (key_pressed(i+4))
+char=keys[i];
+}
+if (key_down(KEY_LSHIFT) or key_down(KEY_RSHIFT))
+{
+if (key_pressed(KEY_1))
+char="!";
+else if (key_pressed(KEY_2))
+char="@";
+else if (key_pressed(KEY_3))
+char="#";
+else if (key_pressed(KEY_4))
+char="$";
+else if (key_pressed(KEY_5))
+char="%";
+else if (key_pressed(KEY_6))
+char="^";
+else if (key_pressed(KEY_7))
+char="&";
+else if (key_pressed(KEY_8))
+char="*";
+else if (key_pressed(KEY_9))
+char="(";
+else if (key_pressed(KEY_0))
+char=")";
+else if (key_pressed(KEY_MINUS))
+char="_";
+else if (key_pressed(KEY_EQUALS))
+char="+";
+else
+char=char.upper();
+}
+if (key_up(KEY_LSHIFT) and key_up(KEY_RSHIFT))
+{
+if (key_pressed(KEY_MINUS))
+char="-";
+if (key_pressed(KEY_EQUALS))
+char="=";
+}
+if (key_pressed(KEY_SPACE))
+char=" ";
+if (key_pressed(KEY_COMMA))
+char=",";
+if (key_pressed(KEY_PERIOD))
+char=".";
+if (key_pressed(KEY_SEMICOLON))
+char=";";
+if (key_pressed(KEY_SLASH))
+char="/";
+if (key_pressed(KEY_APOSTROPHE))
+char="'";
+return char;
+}
+shared int string_contains(const string& in str, const string& in search, int occurance = 1) {
+uint c = 0;
+int pos = -1;
+while (c < occurance) {
+pos = str.find_first(search, pos + 1);
+if (pos > -1)
+c++;
+else
+break;
+}
+return c == occurance ? pos : -1;
+}

@@ -1,0 +1,111 @@
+class flaresolverr{
+private string session, response;
+private string url="localhost:8191/v1";
+private internet_request ir;
+private json_object req;
+private json_array sessions;
+flaresolverr(const string&in s){
+this.session=s;
+}
+void check_session(){
+req.set("cmd", "sessions.list");
+this.post();
+if (response == "") {
+error("Communication error with FlareSolverr.");
+return;
+}
+json_object@ res = parse_json(response);
+if (@res == null) {
+error("Invalid JSON response.");
+return;
+}
+if (res.get("status") == "ok") {
+sessions=res.get("sessions");
+if(!session_exists(session)){
+req.set("cmd", "sessions.create");
+req.set("session", session);
+this.post();
+if (response == "") {
+error("Communication error with FlareSolverr.");
+return;
+}
+json_object@ res = parse_json(response);
+if (@res == null) {
+error("Invalid JSON response.");
+return;
+}
+if (res.get("status") != "ok") {
+error ("Session creation error: "+res.get("message"));
+return;
+}
+}
+}
+return;
+}
+bool session_exists(const string&in session){
+for (uint i = 0; i < sessions.length(); i ++){
+if(sessions[i]==session) return true;
+}
+return false;
+}
+void prepare_request(const string&in target_url, int timeout) {
+req.clear();
+req.set("cmd", "request.get");
+req.set("url", target_url);
+req.set("session", session);
+req.set("maxTimeout", timeout);
+}
+private string post(){
+if (req == null) {
+error("Invalid JSON request.");
+return "";
+}
+ir.reset();
+ir.set_url(url);
+ir.set_header("Content-Type", "application/json");
+ir.set_payload(req.stringify());
+ir.perform();
+while(!ir.complete) {
+wait(2);
+}
+response=ir.response_body;
+return response;
+}
+private string parse_response() {
+if (response == "") {
+error("Communication error with FlareSolverr.");
+return "";
+}
+json_object@ res = parse_json(response);
+if (@res == null) {
+error("Invalid JSON response.");
+return "";
+}
+if (res.get("status") == "ok") {
+json_object@ solution = res.get_object("solution");
+if (@solution != null) {
+string html = string(solution.get("response"));
+if (string_contains(html, "ERR_TIMED_OUT", 1)>-1){
+error("Server timed out!");
+return "";
+}
+return html;
+}
+} else {
+error("FlareSolverr error: " + string(res.get("message")));
+return "";
+}
+return "";
+}
+string get_html(const string&in url){
+speak("Checking session...");
+this.check_session();
+if(response!=""){
+speak("Requesting page...");
+this.prepare_request(url, 60000);
+this.post();
+return this.parse_response();
+}
+return "";
+}
+}

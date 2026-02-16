@@ -1,0 +1,77 @@
+void select_room() {
+reset();
+m.reset(true);
+@m.background_callback = null;
+m.intro_text="Please select a forum room for which to view topics from.";
+string[] items = {"Recently active topics", "General Game Discussion", "New Releases Room", "Developers room", "Off-topic room", "AudioGames - News room", "Articles Room", "Site and forum feedback", "Audiogames Exclusive Games", "Trash", "Exit"};
+m.add_items(items);
+int mres=m.run();
+if(mres==-1 || mres==items.length()-1) exit();
+else{
+room=mres;
+get_topics();
+}
+}
+void show_topics() {
+m.reset(true);
+@m.background_callback = topic_callback;
+m.intro_text="Topics list. Page "+page+" of "+last_page;
+string[] items;
+for(uint i=0; i<topics.length(); i++) items.insert_last(topics[i].status+topics[i].name+" posted by "+topics[i].author);
+items.insert_last("Go back");
+m.add_items(items);
+int mres=m.run();
+if(mres==-1 || mres==items.length()-1) {
+reset();
+select_room();
+}
+else {
+old_page=page;
+page=1;
+topic_url="https://forum.audiogames.net/topic/"+topics[mres].id+"/"+topics[mres].int_name+"/";
+get_posts(topic_url);
+}
+}
+void show_posts(bool reset=true) {
+if(reset) m.reset(true);
+@m.background_callback = post_callback;
+m.intro_text="Posts list. Page "+page+" of "+last_page;
+string[] items;
+for(uint i=0; i<posts.length(); i++) items.insert_last(posts[i].num+". Posted by "+posts[i].author+": "+posts[i].post+"\r\n"+posts[i].date);
+items.insert_last("Go back");
+if(reset) m.add_items(items);
+int mres=m.run();
+if(mres==-1 || mres==items.length()-1) {
+page=old_page;
+old_page=0;
+get_topics();
+}
+else {
+info_box("Post","",posts[mres].post);
+show_posts(false);
+}
+}
+void show_links(uint p){
+if(posts[p].links.length()==0) speak("No links were found.");
+else{
+lm.reset(true);
+lm.intro_text="Links menu. There are total of "+posts[p].links.length()+" links.";
+string[] items;
+for(uint i=0; i<posts[p].links.length(); i++){
+if(posts[p].links[i].name==posts[p].links[i].address) items.insert_last(posts[p].links[i].address);
+else items.insert_last(posts[p].links[i].name+": "+posts[p].links[i].address);
+}
+items.insert_last("Go back");
+lm.add_items(items);
+int lmres=lm.run();
+if(lmres==-1 || lmres==items.length()-1) {
+speak("Canceled.");
+show_posts(false);
+}
+else{
+speak("Opening the link...");
+urlopen(posts[p].links[lmres].address);
+show_posts(false);
+}
+}
+}

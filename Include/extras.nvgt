@@ -1,0 +1,40 @@
+void reset() {
+topics.resize(0);
+posts.resize(0);
+old_page=0;
+page=1;
+room=0;
+}
+string decode_email(const string&in encoded_email){
+if (encoded_email.length() < 2) return "";
+int key = parse_int(encoded_email.substr(0, 2), 16);
+string decoded_email;
+for (uint i = 2; i < encoded_email.length(); i += 2){
+int byte = parse_int(encoded_email.substr(i, 2), 16) ^ key;
+decoded_email += ascii_to_character(byte);
+}
+return decoded_email;
+}
+string return_until(string text, string start, string end) {
+int starting=0;
+string ret;
+if(start!="") {
+starting=string_contains(text, start, 1);
+starting+=start.length();
+}
+if(starting<0) {
+return "";
+}
+for(uint i=starting; i<text.length(); i++) {
+if(text[i]!=end) {
+ret+=text[i];
+}
+if(text[i]==end) {
+break;
+}
+}
+return ret;
+}
+void error(const string&in message){
+message_box("Error", message, {"`~OK"}, MESSAGE_BOX_ERROR);
+}
