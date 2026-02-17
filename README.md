@@ -8,13 +8,13 @@ This project was inspired by a legacy forum browser from years ago. I have compl
 
 Due to security changes on the AudioGames.net website, Cloudflare protection must be bypassed to access the forum content.
 
-### For Release Version Users:
-If you are using the **compiled release (.exe)**, you **do not need** to download or run FlareSolverr. The program is pre-configured to use a remote proxy to handle the bypass automatically. Just launch the app and enjoy!
-
 ### For Source Code Users:
 If you are running the program from source code, you will need a local instance of FlareSolverr:
 1. Download and run [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr/releases).
 2. Ensure it is running on its default port (`http://localhost:8191`).
+
+### For Release Version Users:
+If you are using the **compiled release (.exe)**, you **do not need** to download or run FlareSolverr. The program is pre-configured to use a remote proxy to handle the bypass automatically. Just launch the app and enjoy!
 
 ## Controls
 The application is designed with accessibility in mind and follows standard keyboard navigation:

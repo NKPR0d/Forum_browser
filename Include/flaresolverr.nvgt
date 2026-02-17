@@ -42,36 +42,13 @@ return;
 }
 return;
 }
-private bool session_exists(const string&in session){
-for (uint i = 0; i < sessions.length(); i ++){
-if(sessions[i]==session) return true;
-}
-return false;
-}
-private void prepare_request(const string&in target_url, int timeout) {
+private string request(const string&in target_url, int timeout) {
 req.clear();
 req.set("cmd", "request.get");
 req.set("url", target_url);
 req.set("session", session);
 req.set("maxTimeout", timeout);
-}
-private string post(){
-if (req == null) {
-error("Invalid JSON request.");
-return "";
-}
-ir.reset();
-ir.set_url(url);
-ir.set_header("Content-Type", "application/json");
-ir.set_payload(req.stringify());
-ir.perform();
-while(!ir.complete) {
-wait(2);
-}
-response=ir.response_body;
-return response;
-}
-private string parse_response() {
+this.post();
 if (response == "") {
 error("Communication error with FlareSolverr.");
 return "";
@@ -97,14 +74,34 @@ return "";
 }
 return "";
 }
+private string post(){
+if (req == null) {
+error("Invalid JSON request.");
+return "";
+}
+ir.reset();
+ir.set_url(url);
+ir.set_header("Content-Type", "application/json");
+ir.set_payload(req.stringify());
+ir.perform();
+while(!ir.complete) {
+wait(2);
+}
+response=ir.response_body;
+return response;
+}
+private bool session_exists(const string&in session){
+for (uint i = 0; i < sessions.length(); i ++){
+if(sessions[i]==session) return true;
+}
+return false;
+}
 string get_html(const string&in url){
 speak("Checking session...");
 this.check_session();
 if(response!=""){
 speak("Requesting page...");
-this.prepare_request(url, 60000);
-this.post();
-return this.parse_response();
+return this.request(url, 60000);
 }
 return "";
 }
