@@ -1,6 +1,6 @@
 class flaresolverr{
 private string session, response;
-private string url="http://amsterdam.gumerov-amir.ru:8191/v1";
+private string url="localhost:8191/v1";
 private internet_request ir;
 private json_object req;
 private json_array sessions;
