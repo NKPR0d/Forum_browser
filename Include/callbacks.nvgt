@@ -1,11 +1,22 @@
+void main_callback(menu@ m, string data) {
+if((key_down(KEY_LCTRL) || key_down(KEY_RCTRL)) && key_pressed(KEY_S)){
+string query=input_box("Search", "Enter your search query");
+if(query!=""){
+string processed;
+for(uint i=0; i<query.length(); i++) processed+="%"+string_to_hex(query[i]);
+get_posts("https://forum.audiogames.net/search.php?action=search&keywords="+processed);
+}
+}
+if(keyboard_modifiers & KEYMOD_ALT > 0 && key_pressed(KEY_F4)) exit();
+}
 void topic_callback(menu@ m, string data) {
 if(key_pressed(KEY_SPACE)) {
-uint p=numbox("Please enter a page to jump to.");
-if(p>last_page) speak("This page does not exist.");
+string input=input_box("Page", "Please enter a page to jump to.", "");
+uint p=parse_int(input);
+if(p>last_page) error("This page does not exist.");
 else if(p==0) speak("Canceled.");
 else{
 page=p;
-speak("Page "+page);
 get_topics();
 }
 }
@@ -19,15 +30,16 @@ page--;
 speak("Page "+page);
 get_topics();
 }
+if(keyboard_modifiers & KEYMOD_ALT > 0 && key_pressed(KEY_F4)) exit();
 }
 void post_callback(menu@ m, string data) {
 if(key_pressed(KEY_SPACE)) {
-uint p=numbox("Please enter a page to jump to.");
-if(p>last_page) speak("This page does not exist.");
+string input=input_box("Page", "Please enter a page to jump to.", "");
+uint p=parse_int(input);
+if(p>last_page) error("This page does not exist.");
 else if(p==0) speak("Canceled.");
 else{
 page=p;
-speak("Page "+page);
 get_posts(topic_url, page);
 }
 }
@@ -48,4 +60,5 @@ if(key_pressed(KEY_F3)) speak(posts[m.get_focused_item()].user_from);
 if(key_pressed(KEY_F4)) speak(posts[m.get_focused_item()].user_reg);
 if(key_pressed(KEY_F5)) speak(posts[m.get_focused_item()].user_posts);
 if(key_pressed(KEY_F6)) speak(posts[m.get_focused_item()].user_karma);
+if(keyboard_modifiers & KEYMOD_ALT > 0 && key_pressed(KEY_F4)) exit();
 }

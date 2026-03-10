@@ -1,8 +1,6 @@
 #pragma plugin nvgt_curl
 #include "include/*.nvgt"
 void main() {
-touch_keyboard_interface ti(touch, {{"swipe_left1f", KEY_UP}, {"swipe_right1f", KEY_DOWN}, {"swipe_up1f", KEY_LEFT}, {"swipe_down1f", KEY_RIGHT}, {"double_tap1f", KEY_RETURN}, {"swipe_left2f", KEY_ESCAPE}, {"double_tap2f", KEY_SPACE}});
-touch.add_touch_interface(ti);
 show_window("Audiogames forum browser");
 select_room();
 }

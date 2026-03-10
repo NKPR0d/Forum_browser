@@ -38,3 +38,15 @@ return ret;
 void error(const string&in message){
 message_box("Error", message, {"`~OK"}, MESSAGE_BOX_ERROR);
 }
+shared int string_contains(const string& in str, const string& in search, int occurance = 1) {
+	uint c = 0;
+	int pos = -1;
+	while (c < occurance) {
+		pos = str.find_first(search, pos + 1);
+		if (pos > -1)
+			c++;
+		else
+			break;
+	}
+	return c == occurance ? pos : -1;
+}

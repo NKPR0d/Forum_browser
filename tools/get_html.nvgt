@@ -1,0 +1,26 @@
+#pragma plugin nvgt_curl
+#include "../include/flaresolverr.nvgt"
+#include "speech.nvgt"
+flaresolverr fl("Audiogames_browser");
+void main(){
+string html=input_box("Html", "Enter the link whose html you want to receive.");
+if(html!=""){
+clipboard_set_text(fl.get_html(html));
+alert("","Done.");
+}
+}
+void error(const string&in message){
+message_box("Error", message, {"`~OK"}, MESSAGE_BOX_ERROR);
+}
+int string_contains(const string& in str, const string& in search, int occurance = 1) {
+	uint c = 0;
+	int pos = -1;
+	while (c < occurance) {
+		pos = str.find_first(search, pos + 1);
+		if (pos > -1)
+			c++;
+		else
+			break;
+	}
+	return c == occurance ? pos : -1;
+}
